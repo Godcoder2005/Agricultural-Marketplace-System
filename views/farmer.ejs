@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop - Farmer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background-color: #f4f7fa;
+            color: #333;
+            padding: 50px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e0e0e0;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.4rem;
+            color: #4CAF50;
+            font-weight: 600;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #4CAF50;
+            font-weight: bold;
+            font-size: 1.1rem;
+            padding: 10px 20px;
+            border-radius: 25px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        nav a:hover {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .form-container {
+            background-color: #fafafa;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #333;
+            font-size: 2rem;
+            margin-bottom: 25px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .form-group {
+            margin-bottom: 30px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 15px;
+            font-size: 1rem;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            background-color: #fff;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: #4CAF50;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.2);
+        }
+
+        .form-group input::placeholder {
+            color: #888;
+        }
+
+        .form-group select {
+            appearance: none;
+            background-image: url('https://img.icons8.com/ios/452/expand-arrow.png');
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 20px;
+            padding-right: 40px;
+        }
+
+        .submit-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 18px 26px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            background-color: #45a049;
+            transform: translateY(-3px);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            font-size: 0.9rem;
+            color: #777;
+        }
+
+        footer a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Welcome, <%= user.username %>!</h1> <!-- Display username dynamically -->
+            <nav>
+                <a href="/shop">Home</a>
+                <a href="/logout">Logout</a>
+            </nav>
+        </header>
+
+        <section class="form-container">
+            <h2>Add a New Product</h2>
+            <form action="/add-product" method="POST">
+                <div class="form-group">
+                    <label for="name">Product Name:</label>
+                    <input type="text" id="name" name="name" required placeholder="Enter product name">
+                </div>
+
+                <div class="form-group">
+                    <label for="category">Category:</label>
+                    <select id="category" name="category" required>
+                        <option value="">Select Category</option>
+                        <option value="fruits">Fruits</option>
+                        <option value="vegetables">Vegetables</option>
+                        <option value="grains">Grains</option>
+                        <option value="dairy">Dairy</option>
+                        <option value="livestock">Livestock</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="price">Price per Unit :</label>
+                    <input type="number" id="price" name="price" required placeholder="Enter product price">
+                </div>
+
+                <div class="form-group">
+                    <label for="quantity">Quantity:</label>
+                    <input type="number" id="quantity" name="quantity" required placeholder="Enter product quantity">
+                </div>
+
+                <button type="submit" class="submit-btn">Add Product</button>
+            </form>
+        </section>
+
+        <footer>
+            <p>&copy; 2025 Farm Shop. All rights reserved.</p>
+            <a href="/terms">Terms & Conditions</a>
+        </footer>
+    </div>
+</body>
+</html>

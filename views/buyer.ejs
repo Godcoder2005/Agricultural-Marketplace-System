@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buy Products - Agriculture Marketplace</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background-color: #f4f7fa;
+            color: #333;
+            padding: 50px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e0e0e0;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.4rem;
+            color: #4CAF50;
+            font-weight: 600;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #4CAF50;
+            font-weight: bold;
+            font-size: 1.1rem;
+            padding: 10px 20px;
+            border-radius: 25px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        nav a:hover {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .product-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .product-card {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .product-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .product-card h3 {
+            font-size: 1.6rem;
+            color: #333;
+            font-weight: 500;
+            margin-bottom: 15px;
+        }
+
+        .product-card p {
+            font-size: 1.1rem;
+            color: #777;
+            margin-bottom: 10px;
+        }
+
+        .product-card .price {
+            font-size: 1.4rem;
+            color: #4CAF50;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .product-card .quantity {
+            font-size: 1.1rem;
+            color: #555;
+        }
+
+        .buy-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            font-size: 1.1rem;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+
+        .buy-btn:hover {
+            background-color: #45a049;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            font-size: 0.9rem;
+            color: #777;
+        }
+
+        footer a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Available Products</h1>
+            <nav>
+                <a href="/shop">Home</a>
+                <a href="/logout">Logout</a>
+            </nav>
+        </header>
+
+        <section class="product-container">
+            <% products.forEach(product => { %>
+                <div class="product-card">
+                    <img src="<%= product.image_url || 'default-product-image.jpg' %>" alt="<%= product.name %>">
+                    <h3><%= product.name %></h3>
+                    <p><strong>Category:</strong> <%= product.category %></p>
+                    <p class="price">Price: ₹<%= product.price %> per unit</p>
+                    <p class="quantity"><strong>Available Quantity:</strong> <%= product.quantity %></p>
+                    <a href="/buy/<%= product.id %>" class="buy-btn">Buy Now</a>
+                </div>
+            <% }) %>
+        </section>
+
+        <footer>
+            <p>&copy; 2025 Farm Shop. All rights reserved.</p>
+            <a href="/terms">Terms & Conditions</a>
+        </footer>
+    </div>
+</body>
+</html>
