@@ -11,13 +11,10 @@ const app = express();
 async function initializeDatabase() {
     try {
         await sequelize.authenticate();
-        console.log('Connected to MySQL database');
-        
-        // Sync all models
         await sequelize.sync({ alter: true });
-        console.log('Database models synchronized');
+        console.log('Database connected and synchronized');
     } catch (error) {
-        console.error('Unable to connect to the database:', error);
+        console.error('Database connection error:', error);
     }
 }
 
@@ -93,7 +90,6 @@ app.post('/login', async (req, res) => {
             return res.render('login', { error: 'Invalid email or password' });
         }
 
-        // Check password
         const isValidPassword = await user.comparePassword(password);
         
         if (!isValidPassword) {
@@ -128,5 +124,5 @@ app.get('/logout', (req, res) => {
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    console.log(`Server is running at http://localhost:${PORT}`);
 }); 
