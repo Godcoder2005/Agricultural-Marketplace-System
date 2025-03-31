@@ -12,8 +12,9 @@ async function initializeDatabase() {
     try {
         await sequelize.authenticate();
         await sequelize.sync({ alter: true });
+        console.log('Database models synchronized');
     } catch (error) {
-        console.error('Database connection error');
+        console.error('Unable to connect to the database:', error);
     }
 }
 
@@ -106,12 +107,15 @@ app.post('/login', async (req, res) => {
     try {
         const user = await User.findOne({ where: { email: email } });
         
-        if (!user || !(await user.comparePassword(password))) {
-            return res.render('login', { 
-                error: 'Invalid email or password', 
-                message: null,
-                returnTo 
-            });
+        if (!user) {
+            return res.render('login', { error: 'Invalid email or password' });
+        }
+
+        // Check password
+        const isValidPassword = await user.comparePassword(password);
+        
+        if (!isValidPassword) {
+            return res.render('login', { error: 'Invalid email or password' });
         }
 
         // Set session
@@ -160,5 +164,5 @@ app.get('/', (req, res) => {
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Server running → http://localhost:${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 }); 
