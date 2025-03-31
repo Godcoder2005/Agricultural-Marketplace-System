@@ -4,6 +4,7 @@ const session = require('express-session');
 const path = require('path');
 const sequelize = require('./config/database');
 const User = require('./models/User');
+const Product = require('./models/products'); 
 
 const app = express();
 
@@ -138,9 +139,46 @@ app.post('/login', async (req, res) => {
 });
 
 // Shop route (protected)
-app.get('/shop', isAuthenticated, (req, res) => {
-    res.send('Welcome to the shop!'); // You can create a shop.ejs view later
+app.get('/shop', isAuthenticated, async (req, res) => {
+    const user = await User.findByPk(req.session.userId);
+
+    if (user.role === 'farmer') {
+        // Render the page where farmers can add products
+        res.render('farmer',{user : user}); // You can adjust this to match your view name
+    } else {
+        // Fetch products for buyers
+        const products = await Product.findAll();
+        res.render('buyer', { products });
+    }
 });
+
+// POST /add-product - Handles product submission for farmers only
+app.post('/add-product', isAuthenticated, async (req, res) => {
+    const { name, category, price, quantity } = req.body;
+    const farmer_id = req.session.userId;
+    
+    // Ensure the user is a farmer before allowing them to add a product
+    const user = await User.findByPk(farmer_id);
+    if (user.role !== 'farmer') {
+        return res.status(403).send('Only farmers can add products');
+    }
+
+    try {
+        await Product.create({
+            name,
+            category,
+            price,
+            quantity,
+            user_id: farmer_id,
+        });
+
+        res.redirect('home');
+    } catch (error) {
+        console.error('Error adding product:', error);
+        res.status(500).send('Error adding product.');
+    }
+});
+
 
 // Dashboard route (protected)
 app.get('/dashboard', isAuthenticated, (req, res) => {
