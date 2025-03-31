@@ -7,14 +7,14 @@ const User = require('./models/User');
 
 const app = express();
 
-// Connect to MySQL
+// Connect to MySQL silently
 async function initializeDatabase() {
     try {
         await sequelize.authenticate();
         await sequelize.sync({ alter: true });
-        console.log('Database connected and synchronized');
+        console.log('Database models synchronized');
     } catch (error) {
-        console.error('Database connection error:', error);
+        console.error('Unable to connect to the database:', error);
     }
 }
 
@@ -31,28 +31,42 @@ app.use(session({
     cookie: { secure: process.env.NODE_ENV === 'production' }
 }));
 
+// Authentication Middleware
+const isAuthenticated = (req, res, next) => {
+    if (req.session.userId) {
+        next();
+    } else {
+        // Store the intended destination in session
+        req.session.returnTo = req.originalUrl;
+        res.redirect('/register?message=Please register or login to continue');
+    }
+};
+
 // Set view engine
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 // Registration Routes
 app.get('/register', (req, res) => {
-    res.render('register', { error: null });
+    const message = req.query.message || null;
+    const returnTo = req.session.returnTo || '/dashboard';
+    res.render('register', { error: null, message, returnTo });
 });
 
 app.post('/register', async (req, res) => {
     const { name, email, password, confirmPassword, role } = req.body;
+    const returnTo = req.session.returnTo || '/dashboard';
 
     try {
         // Validate password match
         if (password !== confirmPassword) {
-            return res.render('register', { error: 'Passwords do not match' });
+            return res.render('register', { error: 'Passwords do not match', message: null, returnTo });
         }
 
         // Check if user already exists
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
-            return res.render('register', { error: 'Email already registered' });
+            return res.render('register', { error: 'Email already registered', message: null, returnTo });
         }
 
         // Create new user
@@ -67,29 +81,37 @@ app.post('/register', async (req, res) => {
         req.session.userId = user.id;
         req.session.userRole = user.role;
 
-        // Redirect to dashboard
-        res.redirect('/dashboard');
+        // Clear the returnTo from session
+        const redirectTo = returnTo;
+        req.session.returnTo = null;
+
+        // Redirect to stored path or dashboard
+        res.redirect(redirectTo);
     } catch (error) {
         console.error('Registration error:', error);
-        res.render('register', { error: 'An error occurred during registration' });
+        res.render('register', { error: 'An error occurred during registration', message: null, returnTo });
     }
 });
 
 // Login Routes
 app.get('/login', (req, res) => {
-    res.render('login', { error: null });
+    const message = req.query.message || null;
+    const returnTo = req.session.returnTo || '/dashboard';
+    res.render('login', { error: null, message, returnTo });
 });
 
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
+    const returnTo = req.session.returnTo || '/dashboard';
+
     try {
-        // Find user by email
         const user = await User.findOne({ where: { email: email } });
         
         if (!user) {
             return res.render('login', { error: 'Invalid email or password' });
         }
 
+        // Check password
         const isValidPassword = await user.comparePassword(password);
         
         if (!isValidPassword) {
@@ -99,19 +121,29 @@ app.post('/login', async (req, res) => {
         // Set session
         req.session.userId = user.id;
         req.session.userRole = user.role;
-        
-        res.redirect('/dashboard');
+
+        // Clear the returnTo from session
+        const redirectTo = returnTo;
+        req.session.returnTo = null;
+
+        res.redirect(redirectTo);
     } catch (error) {
         console.error('Login error:', error);
-        res.render('login', { error: 'An error occurred during login' });
+        res.render('login', { 
+            error: 'An error occurred during login', 
+            message: null,
+            returnTo 
+        });
     }
 });
 
+// Shop route (protected)
+app.get('/shop', isAuthenticated, (req, res) => {
+    res.send('Welcome to the shop!'); // You can create a shop.ejs view later
+});
+
 // Dashboard route (protected)
-app.get('/dashboard', (req, res) => {
-    if (!req.session.userId) {
-        return res.redirect('/login');
-    }
+app.get('/dashboard', isAuthenticated, (req, res) => {
     res.send('Welcome to your dashboard!'); // You can create a dashboard.ejs view later
 });
 
@@ -121,8 +153,16 @@ app.get('/logout', (req, res) => {
     res.redirect('/login');
 });
 
+// Home route
+app.get('/', (req, res) => {
+    res.render('home', { 
+        isLoggedIn: !!req.session.userId,
+        userRole: req.session.userRole 
+    });
+});
+
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Server is running at http://localhost:${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 }); 
