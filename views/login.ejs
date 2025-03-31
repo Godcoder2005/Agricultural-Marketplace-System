@@ -5,138 +5,308 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Agricultural Marketplace</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body {
-            height: 100vh;
-            margin: 0;
-            background: #0a0a0a;
+        :root {
+            --primary-color: #199733;
+            --dark-bg: #170f29;
+            --input-bg: rgba(255, 255, 255, 0.1);
+            --text-light: #ffffff;
         }
-        .login-container {
-            height: 100vh;
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(rgba(23, 15, 41, 0.85), rgba(23, 15, 41, 0.95)),
+                        url('https://images.unsplash.com/photo-1625246333195-78d9c38ad449?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1489&q=80') center/cover;
+            font-family: 'Poppins', sans-serif;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
         }
-        .login-card {
-            background: rgba(23, 15, 41, 0.9);
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .floating-item {
+            position: absolute;
+            opacity: 0.15;
+            animation: float 15s linear infinite;
+        }
+
+        .floating-item::before {
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            font-size: 2rem;
+            color: var(--primary-color);
+        }
+
+        .floating-item:nth-child(1) { 
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+        .floating-item:nth-child(1)::before { content: '\f06c'; } /* leaf */
+
+        .floating-item:nth-child(2) {
+            top: 20%;
+            right: 20%;
+            animation-delay: -3s;
+        }
+        .floating-item:nth-child(2)::before { content: '\f5d7'; } /* tractor */
+
+        .floating-item:nth-child(3) {
+            bottom: 30%;
+            left: 30%;
+            animation-delay: -6s;
+        }
+        .floating-item:nth-child(3)::before { content: '\f787'; } /* carrot */
+
+        .floating-item:nth-child(4) {
+            bottom: 10%;
+            right: 10%;
+            animation-delay: -9s;
+        }
+        .floating-item:nth-child(4)::before { content: '\e513'; } /* wheat */
+
+        .floating-item:nth-child(5) {
+            top: 50%;
+            left: 50%;
+            animation-delay: -12s;
+        }
+        .floating-item:nth-child(5)::before { content: '\f4d8'; } /* seedling */
+
+        @keyframes float {
+            0% {
+                transform: translate(0, 0) rotate(0deg) scale(1);
+                opacity: 0;
+            }
+            25% {
+                transform: translate(100px, 100px) rotate(90deg) scale(1.2);
+                opacity: 0.15;
+            }
+            50% {
+                transform: translate(200px, 0) rotate(180deg) scale(1);
+                opacity: 0.1;
+            }
+            75% {
+                transform: translate(100px, -100px) rotate(270deg) scale(1.2);
+                opacity: 0.15;
+            }
+            100% {
+                transform: translate(0, 0) rotate(360deg) scale(1);
+                opacity: 0;
+            }
+        }
+
+        .login-container {
+            background: rgba(23, 15, 41, 0.7);
             border-radius: 15px;
             overflow: hidden;
-            width: 900px;
-            height: 500px;
+            width: 100%;
+            max-width: 900px;
+            min-height: 500px;
             display: flex;
-            box-shadow: 0 0 40px rgba(148, 87, 235, 0.2);
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 1;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
+
         .login-form {
             width: 50%;
             padding: 40px;
-            color: white;
+            color: var(--text-light);
         }
+
         .welcome-side {
             width: 50%;
             padding: 40px;
-            background: linear-gradient(135deg, rgba(148, 87, 235, 0.8), rgba(91, 44, 175, 0.8));
+            background: linear-gradient(135deg, rgba(25, 151, 51, 0.9), rgba(12, 95, 29, 0.95));
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            color: white;
             text-align: center;
+            color: var(--text-light);
+            position: relative;
+            overflow: hidden;
         }
+
+        .welcome-side::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('https://images.unsplash.com/photo-1625246333195-78d9c38ad449?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.1;
+            z-index: -1;
+        }
+
         .form-control {
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--input-bg);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
             border-radius: 8px;
-            padding: 12px;
+            padding: 15px;
             margin-bottom: 20px;
+            color: var(--text-light);
+            transition: all 0.3s;
         }
+
         .form-control:focus {
             background: rgba(255, 255, 255, 0.15);
-            border-color: #9457eb;
-            box-shadow: 0 0 0 2px rgba(148, 87, 235, 0.2);
-            color: white;
+            border-color: #199733;
+            box-shadow: 0 0 0 2px rgba(25, 151, 51, 0.2);
+            color: var(--text-light);
         }
+
         .form-control::placeholder {
             color: rgba(255, 255, 255, 0.6);
         }
+
         .btn-login {
-            background: #9457eb;
+            background: var(--primary-color);
+            color: var(--text-light);
             border: none;
             border-radius: 8px;
-            padding: 12px;
+            padding: 15px;
             width: 100%;
-            color: white;
             font-weight: 600;
-            margin-top: 10px;
+            margin-top: 20px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
+
         .btn-login:hover {
-            background: #7c3cd6;
-            color: white;
+            background: #147a29;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(25, 151, 51, 0.3);
         }
+
         .login-header {
+            text-align: left;
             margin-bottom: 30px;
         }
+
         .login-header h1 {
-            font-size: 28px;
+            font-size: 32px;
             margin-bottom: 10px;
+            color: var(--text-light);
         }
-        .signup-link {
-            margin-top: 20px;
-            text-align: center;
-            color: rgba(255, 255, 255, 0.7);
-        }
-        .signup-link a {
-            color: #9457eb;
-            text-decoration: none;
-        }
-        .signup-link a:hover {
-            text-decoration: underline;
-        }
+
         .error-message {
             color: #ff6b6b;
             margin-bottom: 15px;
             text-align: center;
         }
+
         .welcome-side h2 {
             font-size: 32px;
             margin-bottom: 20px;
         }
+
         .welcome-side p {
             font-size: 16px;
             opacity: 0.9;
-            max-width: 80%;
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .register-link a {
+            color: #199733;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .login-container {
+                flex-direction: column;
+                margin: 20px;
+            }
+            .login-form, .welcome-side {
+                width: 100%;
+            }
+            .welcome-side {
+                padding: 30px;
+            }
+            .floating-item {
+                font-size: 1.5rem;
+            }
+            .floating-item:nth-child(odd) {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Add animated background -->
+    <div class="bg-animation">
+        <div class="floating-item"></div>
+        <div class="floating-item"></div>
+        <div class="floating-item"></div>
+        <div class="floating-item"></div>
+        <div class="floating-item"></div>
+    </div>
+
     <div class="login-container">
-        <div class="login-card">
-            <div class="login-form">
-                <div class="login-header">
-                    <h1>Login</h1>
-                </div>
-
-                <% if (error) { %>
-                    <div class="error-message">
-                        <%= error %>
-                    </div>
-                <% } %>
-
-                <form action="/login" method="POST">
-                    <input type="email" class="form-control" name="email" placeholder="Email" required>
-                    <input type="password" class="form-control" name="password" placeholder="Password" required>
-                    <button type="submit" class="btn btn-login">Login</button>
-                </form>
-
-                <div class="signup-link">
-                    Don't have an account? <a href="/register">Sign Up</a>
-                </div>
+        <div class="login-form">
+            <div class="login-header">
+                <h1>Welcome Back</h1>
             </div>
-            <div class="welcome-side">
-                <h2>Welcome Back!</h2>
-                <p>Connect with farmers and buyers in our agricultural marketplace</p>
+
+            <% if (error) { %>
+                <div class="error-message">
+                    <%= error %>
+                </div>
+            <% } %>
+
+            <% if (message) { %>
+                <div class="alert alert-info">
+                    <%= message %>
+                </div>
+            <% } %>
+
+            <form action="/login" method="POST">
+                <input type="hidden" name="returnTo" value="<%= returnTo %>">
+                <input type="email" class="form-control" name="email" placeholder="Email" required>
+                <input type="password" class="form-control" name="password" placeholder="Password" required>
+                <button type="submit" class="btn btn-login">Login</button>
+            </form>
+
+            <div class="register-link">
+                Don't have an account? <a href="/register">Register</a>
             </div>
+        </div>
+        <div class="welcome-side">
+            <h2>Welcome to Farmix!</h2>
+            <p>Connect with farmers and buyers across the country in our agricultural marketplace.</p>
         </div>
     </div>
 
