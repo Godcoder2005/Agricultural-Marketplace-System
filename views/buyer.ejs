@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -143,8 +144,29 @@
         footer a:hover {
             text-decoration: underline;
         }
+
+        .seller-email {
+            font-size: 14px;
+            /* Adjust font size */
+            color: #2c3e50;
+            /* Darker text color */
+            font-style: italic;
+            /* Italicize for emphasis */
+            margin-top: 10px;
+            /* Add spacing from the previous element */
+            text-decoration: underline;
+            /* Underline for visual interest */
+        }
+
+        .seller-email:hover {
+            color: #3498db;
+            /* Change color on hover */
+            text-decoration: none;
+            /* Remove underline on hover */
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
         <header>
@@ -156,16 +178,24 @@
         </header>
 
         <section class="product-container">
-            <% products.forEach(product => { %>
+            <% products.forEach(product=> { %>
                 <div class="product-card">
                     <img src="<%= product.image_url || 'default-product-image.jpg' %>" alt="<%= product.name %>">
-                    <h3><%= product.name %></h3>
-                    <p><strong>Category:</strong> <%= product.category %></p>
+                    <h3>
+                        <%= product.name %>
+                    </h3>
+                    <p><strong>Category:</strong>
+                        <%= product.category %>
+                    </p>
                     <p class="price">Price: ₹<%= product.price %> per unit</p>
-                    <p class="quantity"><strong>Available Quantity:</strong> <%= product.quantity %></p>
+                    <p class="quantity"><strong>Available Quantity:</strong>
+                        <%= product.quantity %>
+                    </p>
+                    <p class="seller-email">Seller Mail: <%= product.User.email %></p>
+                    </p>
                     <a href="/buy/<%= product.id %>" class="buy-btn">Buy Now</a>
                 </div>
-            <% }) %>
+                <% }) %>
         </section>
 
         <footer>
@@ -174,4 +204,5 @@
         </footer>
     </div>
 </body>
+
 </html>

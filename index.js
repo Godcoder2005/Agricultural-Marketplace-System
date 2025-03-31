@@ -18,7 +18,8 @@ async function initializeDatabase() {
         console.error('Unable to connect to the database:', error);
     }
 }
-
+User.hasMany(Product, { foreignKey: 'user_id', onDelete: 'CASCADE' });
+Product.belongsTo(User, { foreignKey: 'user_id' });
 initializeDatabase();
 
 // Middleware
@@ -122,7 +123,7 @@ app.post('/login', async (req, res) => {
         // Set session
         req.session.userId = user.id;
         req.session.userRole = user.role;
-
+        req.session.username=user.name;
         // Clear the returnTo from session
         const redirectTo = returnTo;
         req.session.returnTo = null;
@@ -144,10 +145,15 @@ app.get('/shop', isAuthenticated, async (req, res) => {
 
     if (user.role === 'farmer') {
         // Render the page where farmers can add products
-        res.render('farmer',{user : user}); // You can adjust this to match your view name
+        res.render('farmer',{user : req.session.username}); // You can adjust this to match your view name
     } else {
         // Fetch products for buyers
-        const products = await Product.findAll();
+        const products = await Product.findAll({
+            include: {
+                model: User,  // Assuming you have a User model
+                attributes: ['email'] // Fetch only the email field
+            }
+        });
         res.render('buyer', { products });
     }
 });
@@ -182,7 +188,7 @@ app.post('/add-product', isAuthenticated, async (req, res) => {
 
 // Dashboard route (protected)
 app.get('/dashboard', isAuthenticated, (req, res) => {
-    res.send('Welcome to your dashboard!'); // You can create a dashboard.ejs view later
+    res.redirect('/'); // You can create a dashboard.ejs view later
 });
 
 // Logout route
