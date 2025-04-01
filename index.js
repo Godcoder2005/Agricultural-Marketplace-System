@@ -205,6 +205,31 @@ app.get('/', (req, res) => {
     });
 });
 
+// Contact Routes
+app.get('/contact', (req, res) => {
+    res.render('contact', { 
+        isLoggedIn: !!req.session.userId,
+        userRole: req.session.userRole 
+    });
+});
+
+app.post('/contact', async (req, res) => {
+    const { name, email, subject, message } = req.body;
+    
+    try {
+        // Here you would typically:
+        // 1. Send an email
+        // 2. Store the message in a database
+        // 3. Send a notification to admin
+        
+        // For now, we'll just redirect with a success message
+        res.redirect('/contact?message=Thank you for your message. We will get back to you soon!');
+    } catch (error) {
+        console.error('Contact form error:', error);
+        res.redirect('/contact?error=There was an error sending your message. Please try again.');
+    }
+});
+
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
