@@ -5,7 +5,7 @@ const path = require('path');
 const sequelize = require('./config/database');
 const User = require('./models/User');
 const Product = require('./models/products'); 
-
+const Message=require('./models/message')
 const app = express();
 
 // Connect to MySQL silently
@@ -207,9 +207,12 @@ app.get('/', (req, res) => {
 
 // Contact Routes
 app.get('/contact', (req, res) => {
+    const { message, redirect, errorType } = req.query;
     res.render('contact', { 
         isLoggedIn: !!req.session.userId,
-        userRole: req.session.userRole 
+        userRole: req.session.userRole,
+        successMessage: message || "", // Display success message if available
+        redirect: redirect === "true" // Convert redirect param to boolean
     });
 });
 
@@ -223,7 +226,13 @@ app.post('/contact', async (req, res) => {
         // 3. Send a notification to admin
         
         // For now, we'll just redirect with a success message
-        res.redirect('/contact?message=Thank you for your message. We will get back to you soon!');
+        try {
+            await Message.create({ name, email, subject, message });
+            console.log('Message saved successfully');
+        } catch (error) {
+            console.error('Error saving message:', error);
+        }
+        res.redirect('/contact?message=Thank you for your message. We will get back to you soon!&redirect=true');
     } catch (error) {
         console.error('Contact form error:', error);
         res.redirect('/contact?error=There was an error sending your message. Please try again.');
