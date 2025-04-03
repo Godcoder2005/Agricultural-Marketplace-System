@@ -5,9 +5,16 @@ const path = require('path');
 const sequelize = require('./config/database');
 const User = require('./models/User');
 const Product = require('./models/products'); 
-const Message=require('./models/message')
+const bcrypt = require('bcryptjs');
 const app = express();
-
+const mysql = require('mysql2');
+const connection = mysql.createConnection({
+    host: process.env.DB_HOST,  // Change if necessary
+    user: process.env.DB_USER,       // Change to your DB user
+    password: process.env.DB_PASSWORD,       // Change to your DB password
+    database: process.env.DB_NAME // Change to your database name
+});
+            
 // Connect to MySQL silently
 async function initializeDatabase() {
     try {
@@ -41,6 +48,15 @@ const isAuthenticated = (req, res, next) => {
         // Store the intended destination in session
         req.session.returnTo = req.originalUrl;
         res.redirect('/register?message=Please register or login to continue');
+    }
+};
+
+// Admin Authentication Middleware
+const isAdmin = (req, res, next) => {
+    if (req.session.isAdmin) {
+        next();
+    } else {
+        res.redirect('/admin/login');
     }
 };
 
@@ -227,7 +243,7 @@ app.post('/contact', async (req, res) => {
         
         // For now, we'll just redirect with a success message
         try {
-            await Message.create({ name, email, subject, message });
+            const result = await connection.execute("INSERT INTO contact_messages (name, email, subject, message) VALUES (?, ?, ?, ?)", [name, email, subject, message]);
             console.log('Message saved successfully');
         } catch (error) {
             console.error('Error saving message:', error);
@@ -236,6 +252,98 @@ app.post('/contact', async (req, res) => {
     } catch (error) {
         console.error('Contact form error:', error);
         res.redirect('/contact?error=There was an error sending your message. Please try again.');
+    }
+});
+
+// Admin Routes
+app.get('/admin/login', (req, res) => {
+    res.render('admin-login', { error: null });
+});
+
+app.post('/admin/login', async (req, res) => {
+    const { username, password } = req.body;
+
+    try {
+        const [admin] = await connection.promise().query(
+            'SELECT * FROM admin WHERE username = ?',
+            [username]
+        );
+
+        if (admin.length === 0) {
+            return res.render('admin-login', { error: 'Invalid username or password' });
+        }
+
+        // Compare password using bcrypt
+        const isValidPassword = await bcrypt.compare(password, admin[0].password);
+        
+        if (isValidPassword) {
+            req.session.isAdmin = true;
+            res.redirect('/admin/dashboard');
+        } else {
+            res.render('admin-login', { error: 'Invalid username or password' });
+        }
+    } catch (error) {
+        console.error('Admin login error:', error);
+        res.render('admin-login', { error: 'An error occurred during login' });
+    }
+});
+
+app.get('/admin/dashboard', isAdmin, async (req, res) => {
+    try {
+        // Fetch messages
+        const [messages] = await connection.promise().query(
+            'SELECT * FROM contact_messages ORDER BY created_at DESC'
+        );
+
+        // Fetch products with user information
+        const products = await Product.findAll({
+            include: [{
+                model: User,
+                attributes: ['name']
+            }]
+        });
+
+        // Fetch users
+        const users = await User.findAll({
+            attributes: ['id', 'name', 'email', 'role']
+        });
+
+        res.render('admin-dashboard', { 
+            messages,
+            products,
+            users
+        });
+    } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        res.render('admin-dashboard', { 
+            messages: [],
+            products: [],
+            users: []
+        });
+    }
+});
+
+app.get('/admin/logout', (req, res) => {
+    req.session.isAdmin = false;
+    res.redirect('/admin/login');
+});
+
+// Admin delete product route
+app.delete('/admin/delete-product/:id', isAdmin, async (req, res) => {
+    try {
+        const productId = req.params.id;
+        
+        // Delete the product
+        await Product.destroy({
+            where: {
+                product_id: productId
+            }
+        });
+        
+        res.status(200).json({ message: 'Product deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting product:', error);
+        res.status(500).json({ error: 'Failed to delete product' });
     }
 });
 
