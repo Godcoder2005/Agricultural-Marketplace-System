@@ -19,3 +19,6 @@ INSERT INTO admin (username, password) VALUES ('Ramcharan', '$2a$10$pMwPIaiu04ys
 
 -- Insert admin user with credentials: username: Sharansai, password: Sharan630
 INSERT INTO admin (username, password) VALUES ('Sharansai', '$2a$10$Qf9wBlR9Xm2aSJY9YGt0iONi5Tt/qCX3d4wLfOWZ6ltOcI8q6JxcW');
+
+-- Insert admin user with credentials: username: Sharansai, password: Sharan630
+INSERT INTO admin (username, password) VALUES ('Akshith', '$2a$10$Qf9wBlR9Xm2aSJY9YGt0iONi5Tt/qCX3d4wLfOWZ6ltOcI8q6JxcW');

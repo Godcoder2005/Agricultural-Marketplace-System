@@ -263,6 +263,38 @@
                 display: none;
             }
         }
+
+        /* Flash Messages */
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .alert-danger {
+            background-color: rgba(220, 53, 69, 0.2);
+            border-color: rgba(220, 53, 69, 0.3);
+            color: #ff6b6b;
+        }
+
+        .alert-success {
+            background-color: rgba(25, 151, 51, 0.2);
+            border-color: rgba(25, 151, 51, 0.3);
+            color: #2ecc71;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 <body>
@@ -281,14 +313,19 @@
                 <h1>Welcome Back</h1>
             </div>
 
-            <% if (error) { %>
-                <div class="error-message">
+            <h2 class="mb-4">Login to Your Account</h2>
+            
+            <!-- Flash Messages -->
+            <% if (error && error.length > 0) { %>
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i>
                     <%= error %>
                 </div>
             <% } %>
-
-            <% if (message) { %>
-                <div class="alert alert-info">
+            
+            <% if (message && message.length > 0) { %>
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle me-2"></i>
                     <%= message %>
                 </div>
             <% } %>

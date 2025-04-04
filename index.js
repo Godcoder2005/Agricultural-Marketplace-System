@@ -8,13 +8,47 @@ const Product = require('./models/products');
 const bcrypt = require('bcryptjs');
 const app = express();
 const mysql = require('mysql2');
+const flash = require('express-flash');
+
 const connection = mysql.createConnection({
     host: process.env.DB_HOST,  // Change if necessary
     user: process.env.DB_USER,       // Change to your DB user
     password: process.env.DB_PASSWORD,       // Change to your DB password
     database: process.env.DB_NAME // Change to your database name
 });
-            
+
+app.use(flash());
+
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Configure session with security options
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000,
+        sameSite: 'strict'
+    },
+    name: 'sessionId',
+}));
+
+// Initialize flash after session
+app.use(flash());
+
+// Add middleware to make isLoggedIn available to all views and debug session
+app.use((req, res, next) => {
+    res.locals.isLoggedIn = !!req.session.userId;
+    res.locals.userRole = req.session.userRole;
+    res.locals.username = req.session.username;
+    next();
+});
+
 // Connect to MySQL silently
 async function initializeDatabase() {
     try {
@@ -29,25 +63,15 @@ User.hasMany(Product, { foreignKey: 'user_id', onDelete: 'CASCADE' });
 Product.belongsTo(User, { foreignKey: 'user_id' });
 initializeDatabase();
 
-// Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(session({
-    secret: process.env.SESSION_SECRET || 'your-secret-key',
-    resave: false,
-    saveUninitialized: false,
-    cookie: { secure: process.env.NODE_ENV === 'production' }
-}));
-
-// Authentication Middleware
+// Authentication Middleware with debugging
 const isAuthenticated = (req, res, next) => {
-    if (req.session.userId) {
+    console.log('Auth Check - Session:', req.session);
+    if (req.session && req.session.userId) {
         next();
     } else {
-        // Store the intended destination in session
+        console.log('Auth Failed - No userId in session');
         req.session.returnTo = req.originalUrl;
-        res.redirect('/register?message=Please register or login to continue');
+        res.redirect('/login?message=Please login to continue');
     }
 };
 
@@ -113,9 +137,13 @@ app.post('/register', async (req, res) => {
 
 // Login Routes
 app.get('/login', (req, res) => {
-    const message = req.query.message || null;
     const returnTo = req.session.returnTo || '/dashboard';
-    res.render('login', { error: null, message, returnTo });
+    res.render('login', { 
+        error: req.flash('error'),
+        message: req.flash('success'),
+        returnTo,
+        isLoggedIn: !!req.session.userId
+    });
 });
 
 app.post('/login', async (req, res) => {
@@ -126,66 +154,116 @@ app.post('/login', async (req, res) => {
         const user = await User.findOne({ where: { email: email } });
         
         if (!user) {
-            return res.render('login', { error: 'Invalid email or password' });
+            req.flash('error', 'Invalid email or password');
+            return res.redirect('/login');
         }
 
         // Check password
         const isValidPassword = await user.comparePassword(password);
         
         if (!isValidPassword) {
-            return res.render('login', { error: 'Invalid email or password' });
+            req.flash('error', 'Invalid email or password');
+            return res.redirect('/login');
         }
 
         // Set session
         req.session.userId = user.id;
         req.session.userRole = user.role;
-        req.session.username=user.name;
-        // Clear the returnTo from session
-        const redirectTo = returnTo;
-        req.session.returnTo = null;
+        req.session.username = user.name;
 
-        res.redirect(redirectTo);
+        // Save session explicitly
+        req.session.save((err) => {
+            if (err) {
+                console.error('Session save error:', err);
+                req.flash('error', 'An error occurred during login');
+                return res.redirect('/login');
+            }
+
+            // Set success message
+            req.flash('success', 'Successfully logged in!');
+
+            // Clear the returnTo from session
+            const redirectTo = returnTo;
+            req.session.returnTo = null;
+
+            res.redirect(redirectTo);
+        });
     } catch (error) {
         console.error('Login error:', error);
-        res.render('login', { 
-            error: 'An error occurred during login', 
-            message: null,
-            returnTo 
-        });
+        req.flash('error', 'An error occurred during login');
+        res.redirect('/login');
     }
 });
 
 // Shop route (protected)
 app.get('/shop', isAuthenticated, async (req, res) => {
-    const user = await User.findByPk(req.session.userId);
+    try {
+        console.log('Shop Route - Session:', req.session);
+        
+        if (!req.session || !req.session.userId) {
+            console.log('Shop Route - No session or userId');
+            return res.redirect('/login');
+        }
 
-    if (user.role === 'farmer') {
-        // Render the page where farmers can add products
-        res.render('farmer',{user : req.session.username}); // You can adjust this to match your view name
-    } else {
-        // Fetch products for buyers
-        const products = await Product.findAll({
-            include: {
-                model: User,  // Assuming you have a User model
-                attributes: ['email'] // Fetch only the email field
-            }
-        });
-        res.render('buyer', { products });
+        const user = await User.findByPk(req.session.userId);
+        
+        if (!user) {
+            req.session.destroy((err) => {
+                if (err) console.error('Session destroy error:', err);
+                req.flash('error', 'User not found. Please login again.');
+                res.redirect('/login');
+            });
+            return;
+        }
+
+        if (user.role === 'farmer') {
+            // Render the page where farmers can add products
+            res.render('farmer', {
+                user: req.session.username,
+                isLoggedIn: true,
+                userRole: user.role
+            });
+        } else {
+            // Fetch products for buyers
+            const products = await Product.findAll({
+                include: {
+                    model: User,
+                    attributes: ['email', 'name']
+                }
+            });
+            res.render('buyer', {
+                products,
+                isLoggedIn: true,
+                userRole: user.role,
+                username: user.name
+            });
+        }
+    } catch (error) {
+        console.error('Shop route error:', error);
+        req.flash('error', 'An error occurred. Please try again.');
+        res.redirect('/login');
     }
 });
 
 // POST /add-product - Handles product submission for farmers only
 app.post('/add-product', isAuthenticated, async (req, res) => {
-    const { name, category, price, quantity } = req.body;
-    const farmer_id = req.session.userId;
-    
-    // Ensure the user is a farmer before allowing them to add a product
-    const user = await User.findByPk(farmer_id);
-    if (user.role !== 'farmer') {
-        return res.status(403).send('Only farmers can add products');
-    }
-
     try {
+        const { name, category, price, quantity } = req.body;
+        const farmer_id = req.session.userId;
+        
+        // Ensure the user is a farmer before allowing them to add a product
+        const user = await User.findByPk(farmer_id);
+        
+        if (!user) {
+            req.flash('error', 'User not found. Please login again.');
+            return res.redirect('/login');
+        }
+
+        if (user.role !== 'farmer') {
+            req.flash('error', 'Only farmers can add products');
+            return res.redirect('/shop');
+        }
+
         await Product.create({
             name,
             category,
@@ -194,10 +272,12 @@ app.post('/add-product', isAuthenticated, async (req, res) => {
             user_id: farmer_id,
         });
 
-        res.redirect('home');
+        req.flash('success', 'Product added successfully!');
+        res.redirect('/');
     } catch (error) {
         console.error('Error adding product:', error);
-        res.status(500).send('Error adding product.');
+        req.flash('error', 'Error adding product. Please try again.');
+        res.redirect('/shop');
     }
 });
 
@@ -253,6 +333,19 @@ app.post('/contact', async (req, res) => {
         console.error('Contact form error:', error);
         res.redirect('/contact?error=There was an error sending your message. Please try again.');
     }
+});
+
+app.get('/services',(req,res)=>{
+    res.render('services');
+})
+
+// About Route
+app.get('/about', (req, res) => {
+    res.render('about', {
+        isLoggedIn: !!req.session.userId,
+        userRole: req.session.userRole,
+        username: req.session.username
+    });
 });
 
 // Admin Routes
@@ -359,6 +452,68 @@ app.get('/terms', (req, res) => {
         isLoggedIn: !!req.session.userId,
         userRole: req.session.userRole 
     });
+});
+
+// Products Routes
+app.get('/products', async (req, res) => {
+    try {
+        const products = await Product.findAll({
+            include: [{
+                model: User,
+                attributes: ['name', 'email']
+            }],
+            order: [['createdAt', 'DESC']]
+        });
+
+        res.render('products', {
+            products,
+            isLoggedIn: !!req.session.userId,
+            userRole: req.session.userRole,
+            username: req.session.username
+        });
+    } catch (error) {
+        console.error('Error fetching products:', error);
+        req.flash('error', 'Error loading products');
+        res.redirect('/');
+    }
+});
+
+app.get('/products/add', isAuthenticated, async (req, res) => {
+    if (req.session.userRole !== 'farmer') {
+        req.flash('error', 'Only farmers can add products');
+        return res.redirect('/products');
+    }
+    res.render('add-product', {
+        isLoggedIn: true,
+        userRole: req.session.userRole,
+        username: req.session.username
+    });
+});
+
+app.post('/products/add', isAuthenticated, async (req, res) => {
+    try {
+        const { name, category, price, quantity } = req.body;
+        
+        if (!name || !category || !price || !quantity) {
+            req.flash('error', 'All fields are required');
+            return res.redirect('/products/add');
+        }
+
+        await Product.create({
+            name,
+            category,
+            price: parseFloat(price),
+            quantity: parseInt(quantity),
+            user_id: req.session.userId
+        });
+
+        req.flash('success', 'Product added successfully');
+        res.redirect('/products');
+    } catch (error) {
+        console.error('Error adding product:', error);
+        req.flash('error', 'Error adding product');
+        res.redirect('/products/add');
+    }
 });
 
 // Start server
