@@ -76,7 +76,7 @@ app.post('/register', async (req, res) => {
     const returnTo = req.session.returnTo || '/dashboard';
 
     try {
-        // Validate password match
+ 
         if (password !== confirmPassword) {
             return res.render('register', { error: 'Passwords do not match', message: null, returnTo });
         }
@@ -351,6 +351,14 @@ app.delete('/admin/delete-product/:id', isAdmin, async (req, res) => {
         console.error('Error deleting product:', error);
         res.status(500).json({ error: 'Failed to delete product' });
     }
+});
+
+// Terms of Service Route
+app.get('/terms', (req, res) => {
+    res.render('terms', { 
+        isLoggedIn: !!req.session.userId,
+        userRole: req.session.userRole 
+    });
 });
 
 // Start server
