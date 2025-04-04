@@ -409,7 +409,10 @@
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg">
+    <!-- Hidden element to store messages data -->
+    <div id="messages-data" data-messages='<%- JSON.stringify(messages || []) %>' style="display: none;"></div>
+
+    <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
             <a class="navbar-brand text-light" href="#">Admin Dashboard</a>
             <div class="ms-auto d-flex align-items-center">
@@ -612,21 +615,8 @@
         let isMessagesVisible = false;
         let selectedProductId = null;
 
-        // Store messages data for modal
-        const messagesData = [
-            <% if (messages && messages.length > 0) { %>
-                <% messages.forEach(function(message, index) { %>
-                    {
-                        id: <%= message.id %>,
-                        name: "<%= message.name %>",
-                        email: "<%= message.email %>",
-                        subject: "<%= message.subject %>",
-                        message: "<%= message.message %>",
-                        created_at: "<%= message.created_at %>"
-                    }<%= index < messages.length - 1 ? ',' : '' %>
-                <% }); %>
-            <% } %>
-        ];
+        // Get messages data from the data attribute instead of embedding EJS in JavaScript
+        const messagesData = JSON.parse(document.getElementById('messages-data').getAttribute('data-messages'));
 
         // Tab switching
         document.querySelectorAll('.admin-tab').forEach(tab => {

@@ -262,29 +262,35 @@ app.get('/admin/login', (req, res) => {
 
 app.post('/admin/login', async (req, res) => {
     const { username, password } = req.body;
-
+    
     try {
-        const [admin] = await connection.promise().query(
+        // Execute the query and get the rows directly
+        const [rows] = await connection.promise().query(
             'SELECT * FROM admin WHERE username = ?',
             [username]
         );
 
-        if (admin.length === 0) {
+        // Check if any admin user was found
+        if (rows.length === 0) {
             return res.render('admin-login', { error: 'Invalid username or password' });
         }
 
+        const admin = rows[0]; // Get the first row
+        
         // Compare password using bcrypt
-        const isValidPassword = await bcrypt.compare(password, admin[0].password);
+        const isValidPassword = await bcrypt.compare(password, admin.password);
         
         if (isValidPassword) {
             req.session.isAdmin = true;
-            res.redirect('/admin/dashboard');
+            req.session.adminId = admin.id;
+            req.session.adminUsername = admin.username;
+            return res.redirect('/admin/dashboard');
         } else {
-            res.render('admin-login', { error: 'Invalid username or password' });
+            return res.render('admin-login', { error: 'Invalid username or password' });
         }
     } catch (error) {
-        console.error('Admin login error:', error);
-        res.render('admin-login', { error: 'An error occurred during login' });
+        console.error('Admin login error occurred');
+        return res.render('admin-login', { error: 'An error occurred during login' });
     }
 });
 
