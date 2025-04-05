@@ -193,7 +193,7 @@
                     </p>
                     <p class="seller-email">Seller Mail: <%= product.User.email %></p>
                     </p>
-                    <a href="/buy<%= product.id %>" class="buy-btn">Buy Now</a>
+                    <a href="/checkout/<%= product.product_id %>" class="buy-btn">Buy Now</a>
                 </div>
                 <% }) %>
         </section>

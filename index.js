@@ -446,6 +446,36 @@ app.delete('/admin/delete-product/:id', isAdmin, async (req, res) => {
     }
 });
 
+// Admin delete user route
+app.delete('/admin/delete-user/:id', isAdmin, async (req, res) => {
+    try {
+        const userId = req.params.id;
+        
+        // Check if user exists
+        const user = await User.findByPk(userId);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        
+        // Prevent deleting admin users
+        if (user.role === 'admin') {
+            return res.status(403).json({ error: 'Admin users cannot be deleted' });
+        }
+        
+        // Delete the user
+        await User.destroy({
+            where: {
+                id: userId
+            }
+        });
+        
+        res.status(200).json({ message: 'User deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        res.status(500).json({ error: 'Failed to delete user' });
+    }
+});
+
 // Terms of Service Route
 app.get('/terms', (req, res) => {
     res.render('terms', { 
@@ -513,6 +543,87 @@ app.post('/products/add', isAuthenticated, async (req, res) => {
         console.error('Error adding product:', error);
         req.flash('error', 'Error adding product');
         res.redirect('/products/add');
+    }
+});
+
+// Checkout route
+app.get('/checkout/:productId', isAuthenticated, async (req, res) => {
+    try {
+        const productId = req.params.productId;
+        const product = await Product.findByPk(productId, {
+            include: {
+                model: User,
+                attributes: ['name', 'email']
+            }
+        });
+
+        if (!product) {
+            req.flash('error', 'Product not found');
+            return res.redirect('/products');
+        }
+
+        res.render('checkout', {
+            product,
+            isLoggedIn: true,
+            userRole: req.session.userRole,
+            username: req.session.username,
+            messages: req.flash()
+        });
+    } catch (error) {
+        console.error('Checkout route error:', error);
+        req.flash('error', 'An error occurred. Please try again.');
+        res.redirect('/products');
+    }
+});
+
+// Handle order submission
+app.post('/submit-order', isAuthenticated, async (req, res) => {
+    try {
+        const { 
+            productId, 
+            firstName, 
+            lastName, 
+            email, 
+            phone, 
+            address, 
+            city, 
+            pincode, 
+            quantity 
+        } = req.body;
+        
+        // Get product details
+        const product = await Product.findByPk(productId);
+        if (!product) {
+            return res.status(404).json({ success: false, message: 'Product not found' });
+        }
+        
+        // Calculate total price
+        const totalPrice = product.price * quantity;
+        
+        // Create order in database
+        const order = await connection.promise().query(
+            `INSERT INTO orders (
+                product_id, buyer_id, seller_id, first_name, last_name, 
+                email, phone, address, city, pincode, quantity, total_price, 
+                payment_status, order_status
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'completed', 'pending')`,
+            [
+                productId, req.session.userId, product.user_id, 
+                firstName, lastName, email, phone, address, 
+                city, pincode, quantity, totalPrice
+            ]
+        );
+        
+        // Update product quantity
+        await Product.update(
+            { quantity: product.quantity - quantity },
+            { where: { product_id: productId } }
+        );
+        
+        res.json({ success: true, orderId: order[0].insertId });
+    } catch (error) {
+        console.error('Error submitting order:', error);
+        res.status(500).json({ success: false, message: 'An error occurred while processing your order' });
     }
 });
 

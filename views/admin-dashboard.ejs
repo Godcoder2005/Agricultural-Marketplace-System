@@ -443,6 +443,7 @@
         <div class="admin-tabs">
             <div class="admin-tab active" data-tab="dashboard">Dashboard</div>
             <div class="admin-tab" data-tab="products">Manage Products</div>
+            <div class="admin-tab" data-tab="users">Manage Users</div>
         </div>
 
         <!-- Dashboard Tab Content -->
@@ -517,6 +518,57 @@
                             <% } else { %>
                                 <tr>
                                     <td colspan="7" class="text-center">No products found</td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Users Tab Content -->
+        <div class="tab-content" id="users-tab" style="display: none;">
+            <div class="products-table-container">
+                <h3 class="mb-4">Manage Users</h3>
+                <p>View and manage user accounts in the system.</p>
+                
+                <div class="table-responsive">
+                    <table class="products-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Joined Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (users && users.length > 0) { %>
+                                <% users.forEach(function(user) { %>
+                                    <tr data-user-id="<%= user.id %>">
+                                        <td><%= user.id %></td>
+                                        <td><%= user.name %></td>
+                                        <td><%= user.email %></td>
+                                        <td><%= user.role %></td>
+                                        <td><%= new Date(user.createdAt).toLocaleDateString() %></td>
+                                        <td>
+                                            <% if (user.role !== 'admin') { %>
+                                                <button class="delete-btn" data-user-id="<%= user.id %>">
+                                                    <i class="fas fa-trash"></i> Delete
+                                                </button>
+                                            <% } else { %>
+                                                <button class="delete-btn" disabled title="Admin users cannot be deleted">
+                                                    <i class="fas fa-trash"></i> Delete
+                                                </button>
+                                            <% } %>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="6" class="text-center">No users found</td>
                                 </tr>
                             <% } %>
                         </tbody>
@@ -614,6 +666,8 @@
         const productToDelete = document.getElementById('product-to-delete');
         let isMessagesVisible = false;
         let selectedProductId = null;
+        let selectedUserId = null;
+        let deleteType = null; // 'product' or 'user'
 
         // Get messages data from the data attribute instead of embedding EJS in JavaScript
         const messagesData = JSON.parse(document.getElementById('messages-data').getAttribute('data-messages'));
@@ -691,7 +745,7 @@
         });
 
         // Product deletion
-        document.querySelectorAll('.delete-btn').forEach(btn => {
+        document.querySelectorAll('.delete-btn[data-product-id]').forEach(btn => {
             btn.addEventListener('click', (event) => {
                 event.stopPropagation();
                 const productId = btn.getAttribute('data-product-id');
@@ -699,7 +753,34 @@
                 const productName = productRow.querySelector('td:nth-child(2)').textContent;
                 
                 selectedProductId = productId;
+                selectedUserId = null;
+                deleteType = 'product';
+                
                 productToDelete.textContent = `Product: ${productName} (ID: ${productId})`;
+                confirmationModal.classList.add('show');
+            });
+        });
+
+        // User deletion
+        document.querySelectorAll('.delete-btn[data-user-id]').forEach(btn => {
+            btn.addEventListener('click', (event) => {
+                event.stopPropagation();
+                
+                // Skip if button is disabled (admin user)
+                if (btn.disabled) {
+                    alert('Admin users cannot be deleted');
+                    return;
+                }
+                
+                const userId = btn.getAttribute('data-user-id');
+                const userRow = document.querySelector(`tr[data-user-id="${userId}"]`);
+                const userName = userRow.querySelector('td:nth-child(2)').textContent;
+                
+                selectedUserId = userId;
+                selectedProductId = null;
+                deleteType = 'user';
+                
+                productToDelete.textContent = `User: ${userName} (ID: ${userId})`;
                 confirmationModal.classList.add('show');
             });
         });
@@ -715,8 +796,8 @@
 
         // Confirm delete
         confirmDelete.addEventListener('click', () => {
-            if (selectedProductId) {
-                // Send delete request to server
+            if (deleteType === 'product' && selectedProductId) {
+                // Send delete request to server for product
                 fetch(`/admin/delete-product/${selectedProductId}`, {
                     method: 'DELETE',
                     headers: {
@@ -740,6 +821,38 @@
                 .catch(error => {
                     console.error('Error:', error);
                     alert('An error occurred while deleting the product.');
+                })
+                .finally(() => {
+                    confirmationModal.classList.remove('show');
+                });
+            } else if (deleteType === 'user' && selectedUserId) {
+                // Send delete request to server for user
+                fetch(`/admin/delete-user/${selectedUserId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Remove the user row from the table
+                        const userRow = document.querySelector(`tr[data-user-id="${selectedUserId}"]`);
+                        if (userRow) {
+                            userRow.remove();
+                        }
+                        
+                        // Show success message
+                        alert('User deleted successfully!');
+                    } else {
+                        // Parse the error message from the response
+                        return response.json().then(data => {
+                            throw new Error(data.error || 'Failed to delete user');
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert(error.message || 'An error occurred while deleting the user.');
                 })
                 .finally(() => {
                     confirmationModal.classList.remove('show');
