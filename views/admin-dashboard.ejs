@@ -455,15 +455,15 @@
                         <div class="card bg-dark text-light">
                             <div class="card-body text-center">
                                 <h5 class="card-title">Total Products</h5>
-                                <p class="card-text display-4"><%= products ? products.length : 0 %></p>
+                                <p class="card-text display-4"><%= productStats.total_products || 0 %></p>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-4 mb-3">
                         <div class="card bg-dark text-light">
                             <div class="card-body text-center">
-                                <h5 class="card-title">Total Messages</h5>
-                                <p class="card-text display-4"><%= messages ? messages.length : 0 %></p>
+                                <h5 class="card-title">Total Orders</h5>
+                                <p class="card-text display-4"><%= orderStats.total_orders || 0 %></p>
                             </div>
                         </div>
                     </div>
@@ -471,7 +471,71 @@
                         <div class="card bg-dark text-light">
                             <div class="card-body text-center">
                                 <h5 class="card-title">Total Users</h5>
-                                <p class="card-text display-4"><%= users ? users.length : 0 %></p>
+                                <p class="card-text display-4"><%= userStats.total_users || 0 %></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3 class="mb-3 mt-4">Orders Overview</h3>
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <div class="card border-left-info shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Revenue</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">₹<%= Number(orderStats.total_revenue || 0).toFixed(2) %></div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card border-left-primary shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Single Items</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800"><%= orderStats.single_item_orders || 0 %></div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-shopping-bag fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card border-left-success shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Multi Items</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800"><%= orderStats.multi_item_orders || 0 %></div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-shopping-cart fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card border-left-warning shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pending</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800"><%= orderStats.pending_orders || 0 %></div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-clock fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -482,156 +546,170 @@
         <!-- Products Tab Content -->
         <div class="tab-content" id="products-tab" style="display: none;">
             <div class="products-table-container">
-                <h3 class="mb-4">Manage Products</h3>
-                <p>Click on a product to delete it from the system.</p>
-                
-                <div class="table-responsive">
-                    <table class="products-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Category</th>
-                                <th>Price</th>
-                                <th>Quantity</th>
-                                <th>Seller</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% if (products && products.length > 0) { %>
-                                <% products.forEach(function(product) { %>
-                                    <tr data-product-id="<%= product.product_id %>">
-                                        <td><%= product.product_id %></td>
-                                        <td><%= product.name %></td>
-                                        <td><%= product.category %></td>
-                                        <td>₹<%= product.price %></td>
-                                        <td><%= product.quantity %></td>
-                                        <td><%= product.User ? product.User.name : 'Unknown' %></td>
-                                        <td>
-                                            <button class="delete-btn" data-product-id="<%= product.product_id %>">
-                                                <i class="fas fa-trash"></i> Delete
-                                            </button>
-                                        </td>
-                                    </tr>
-                                <% }); %>
-                            <% } else { %>
-                                <tr>
-                                    <td colspan="7" class="text-center">No products found</td>
-                                </tr>
-                            <% } %>
-                        </tbody>
-                    </table>
+                <h3 class="mb-4">Top Products</h3>
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">Product Stats</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card bg-light">
+                                            <div class="card-body text-center">
+                                                <h6 class="card-title">Total Products</h6>
+                                                <p class="card-text h4"><%= productStats.total_products || 0 %></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card bg-light">
+                                            <div class="card-body text-center">
+                                                <h6 class="card-title">Total Inventory</h6>
+                                                <p class="card-text h4"><%= productStats.total_inventory || 0 %> units</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card bg-light">
+                                            <div class="card-body text-center">
+                                                <h6 class="card-title">Categories</h6>
+                                                <p class="card-text h4"><%= productStats.categories || 0 %></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card bg-light">
+                                            <div class="card-body text-center">
+                                                <h6 class="card-title">Avg. Price</h6>
+                                                <p class="card-text h4">₹<%= Number(productStats.avg_price || 0).toFixed(2) %></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">Popular Products</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Category</th>
+                                                <th>Price</th>
+                                                <th>Qty Sold</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% if (popularProducts && popularProducts.length > 0) { %>
+                                                <% popularProducts.forEach(product => { %>
+                                                    <tr>
+                                                        <td><%= product.name %></td>
+                                                        <td><%= product.category %></td>
+                                                        <td>₹<%= Number(product.price).toFixed(2) %></td>
+                                                        <td><%= product.quantity_sold || 0 %></td>
+                                                    </tr>
+                                                <% }); %>
+                                            <% } else { %>
+                                                <tr>
+                                                    <td colspan="4" class="text-center">No products found</td>
+                                                </tr>
+                                            <% } %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+                <a href="/admin/products" class="btn btn-primary">Manage All Products</a>
             </div>
         </div>
 
         <!-- Users Tab Content -->
         <div class="tab-content" id="users-tab" style="display: none;">
             <div class="products-table-container">
-                <h3 class="mb-4">Manage Users</h3>
-                <p>View and manage user accounts in the system.</p>
-                
+                <h3 class="mb-4">User Statistics</h3>
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card bg-primary text-white mb-4">
+                            <div class="card-body text-center">
+                                <h6 class="card-title">Total Users</h6>
+                                <p class="card-text h2"><%= userStats.total_users || 0 %></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-success text-white mb-4">
+                            <div class="card-body text-center">
+                                <h6 class="card-title">Buyers</h6>
+                                <p class="card-text h2"><%= userStats.buyers || 0 %></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-info text-white mb-4">
+                            <div class="card-body text-center">
+                                <h6 class="card-title">Farmers</h6>
+                                <p class="card-text h2"><%= userStats.farmers || 0 %></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <a href="/admin/users" class="btn btn-primary">Manage All Users</a>
+            </div>
+        </div>
+
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Recent Orders</h6>
+                <a href="/admin/orders" class="btn btn-sm btn-primary">View All</a>
+            </div>
+            <div class="card-body">
                 <div class="table-responsive">
-                    <table class="products-table">
+                    <table class="table table-bordered">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Joined Date</th>
-                                <th>Actions</th>
+                                <th>Order ID</th>
+                                <th>Buyer</th>
+                                <th>Product</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Date</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <% if (users && users.length > 0) { %>
-                                <% users.forEach(function(user) { %>
-                                    <tr data-user-id="<%= user.id %>">
-                                        <td><%= user.id %></td>
-                                        <td><%= user.name %></td>
-                                        <td><%= user.email %></td>
-                                        <td><%= user.role %></td>
-                                        <td><%= new Date(user.createdAt).toLocaleDateString() %></td>
+                            <% if (recentOrders && recentOrders.length > 0) { %>
+                                <% recentOrders.forEach(order => { %>
+                                    <tr>
+                                        <td>#<%= order.order_id %></td>
+                                        <td><%= order.buyer_name %></td>
+                                        <td><%= order.product_name %></td>
+                                        <td>₹<%= Number(order.total_price).toFixed(2) %></td>
                                         <td>
-                                            <% if (user.role !== 'admin') { %>
-                                                <button class="delete-btn" data-user-id="<%= user.id %>">
-                                                    <i class="fas fa-trash"></i> Delete
-                                                </button>
-                                            <% } else { %>
-                                                <button class="delete-btn" disabled title="Admin users cannot be deleted">
-                                                    <i class="fas fa-trash"></i> Delete
-                                                </button>
-                                            <% } %>
+                                            <span class="badge badge-<%= order.order_status %>">
+                                                <%= order.order_status.charAt(0).toUpperCase() + order.order_status.slice(1) %>
+                                            </span>
                                         </td>
+                                        <td><%= new Date(order.createdAt).toLocaleDateString() %></td>
                                     </tr>
                                 <% }); %>
                             <% } else { %>
                                 <tr>
-                                    <td colspan="6" class="text-center">No users found</td>
+                                    <td colspan="6" class="text-center">No recent orders</td>
                                 </tr>
                             <% } %>
                         </tbody>
                     </table>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="messages-container" id="messagesContainer">
-        <div class="p-3 border-bottom" style="background: rgba(25, 151, 51, 0.2);">
-            <h5 class="mb-0">Messages</h5>
-        </div>
-        <% if (messages && messages.length > 0) { %>
-            <% messages.forEach(function(message) { %>
-                <div class="message-item" data-message-id="<%= message.id %>">
-                    <div class="message-header">
-                        <div class="message-subject"><%= message.subject %></div>
-                        <div class="message-time"><%= new Date(message.created_at).toLocaleString() %></div>
-                    </div>
-                    <div class="message-content"><%= message.message %></div>
-                    <div class="message-footer">
-                        From: <%= message.name %> (<%= message.email %>)
-                    </div>
-                </div>
-            <% }); %>
-        <% } else { %>
-            <div class="message-item">
-                <div class="message-content text-center">No new messages</div>
-            </div>
-        <% } %>
-    </div>
-
-    <!-- Message Details Modal -->
-    <div class="message-details-modal" id="messageDetailsModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Message Details</h5>
-                <button class="close-modal" id="closeModal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <table class="message-details-table">
-                    <tr>
-                        <th>From</th>
-                        <td id="modal-sender"></td>
-                    </tr>
-                    <tr>
-                        <th>Email</th>
-                        <td id="modal-email"></td>
-                    </tr>
-                    <tr>
-                        <th>Subject</th>
-                        <td id="modal-subject"></td>
-                    </tr>
-                    <tr>
-                        <th>Date</th>
-                        <td id="modal-date"></td>
-                    </tr>
-                    <tr>
-                        <th>Message</th>
-                        <td id="modal-message"></td>
-                    </tr>
-                </table>
+                <a href="/admin/orders" class="btn btn-info mt-3">Manage Orders</a>
             </div>
         </div>
     </div>
@@ -654,11 +732,10 @@
         </div>
     </div>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const notificationBtn = document.getElementById('notificationBtn');
-        const messagesContainer = document.getElementById('messagesContainer');
-        const messageDetailsModal = document.getElementById('messageDetailsModal');
-        const closeModal = document.getElementById('closeModal');
         const confirmationModal = document.getElementById('confirmationModal');
         const closeConfirmationModal = document.getElementById('closeConfirmationModal');
         const cancelDelete = document.getElementById('cancelDelete');
@@ -694,7 +771,9 @@
         // Toggle messages container
         notificationBtn.addEventListener('click', () => {
             isMessagesVisible = !isMessagesVisible;
-            messagesContainer.classList.toggle('show', isMessagesVisible);
+            document.querySelectorAll('.messages-container').forEach(container => {
+                container.classList.toggle('show', isMessagesVisible);
+            });
             
             // Rotate bell icon when messages are visible
             notificationBtn.querySelector('i').style.transform = isMessagesVisible ? 'rotate(15deg)' : 'rotate(0)';
@@ -703,10 +782,12 @@
         // Close messages when clicking outside
         document.addEventListener('click', (event) => {
             if (isMessagesVisible && 
-                !messagesContainer.contains(event.target) && 
+                !document.querySelectorAll('.messages-container').some(container => container.contains(event.target)) && 
                 !notificationBtn.contains(event.target)) {
                 isMessagesVisible = false;
-                messagesContainer.classList.remove('show');
+                document.querySelectorAll('.messages-container').forEach(container => {
+                    container.classList.remove('show');
+                });
                 notificationBtn.querySelector('i').style.transform = 'rotate(0)';
             }
         });

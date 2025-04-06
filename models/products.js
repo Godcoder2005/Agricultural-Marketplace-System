@@ -1,6 +1,6 @@
-// models/product.js
+
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');  // Adjust this path as needed
+const sequelize = require('../config/database');  
 
 const Product = sequelize.define('Product', {
     product_id: {
@@ -24,11 +24,15 @@ const Product = sequelize.define('Product', {
         type: DataTypes.INTEGER,
         allowNull: false
     },
+    description: {
+        type: DataTypes.TEXT,
+        allowNull: true
+    },
     user_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: 'users',  // Referring to the 'users' table
+            model: 'users',  
             key: 'id'
         }
     },
