@@ -89,6 +89,38 @@
             }
         }
 
+        .messages-header {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .messages-header h5 {
+            margin: 0;
+            color: var(--primary-color);
+        }
+
+        .close-messages {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+
+        .close-messages:hover {
+            opacity: 1;
+        }
+
+        .messages-list {
+            padding: 1rem;
+        }
+
         .message-item {
             padding: 1rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -125,9 +157,15 @@
             margin-bottom: 0.5rem;
         }
 
-        .message-footer {
+        .message-preview {
             font-size: 0.9rem;
             opacity: 0.8;
+        }
+
+        .no-messages {
+            text-align: center;
+            padding: 2rem;
+            opacity: 0.7;
         }
 
         .welcome-card {
@@ -418,14 +456,77 @@
             <div class="ms-auto d-flex align-items-center">
                 <button class="notification-btn me-3" id="notificationBtn">
                     <i class="fas fa-bell"></i>
-                    <% if (messages && messages.length > 0) { %>
-                        <span class="notification-badge"><%= messages.length %></span>
+                    <% if (contactMessages && contactMessages.length > 0) { %>
+                        <span class="notification-badge"><%= contactMessages.length %></span>
                     <% } %>
                 </button>
                 <a href="/admin/logout" class="btn btn-outline-light">Logout</a>
             </div>
         </div>
     </nav>
+
+    <!-- Messages Container -->
+    <div class="messages-container" id="messagesContainer">
+        <div class="messages-header">
+            <h5>Contact Messages</h5>
+            <button class="close-messages">&times;</button>
+        </div>
+        <div class="messages-list">
+            <% console.log('Template contactMessages:', contactMessages); %>
+            <% if (contactMessages && contactMessages.length > 0) { %>
+                <% contactMessages.forEach(message => { %>
+                    <div class="message-item" data-message-id="<%= message.id %>">
+                        <div class="message-header">
+                            <span class="message-subject"><%= message.subject %></span>
+                            <span class="message-time"><%= new Date(message.created_at).toLocaleString() %></span>
+                        </div>
+                        <div class="message-content">
+                            <strong>From:</strong> <%= message.name %> (<%= message.email %>)
+                        </div>
+                        <div class="message-preview">
+                            <%= message.message.substring(0, 100) %>...
+                        </div>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <div class="no-messages">No messages</div>
+            <% } %>
+        </div>
+    </div>
+
+    <!-- Message Details Modal -->
+    <div class="message-details-modal" id="messageDetailsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Message Details</h5>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <table class="message-details-table">
+                    <tr>
+                        <th>From:</th>
+                        <td id="modal-sender"></td>
+                    </tr>
+                    <tr>
+                        <th>Email:</th>
+                        <td id="modal-email"></td>
+                    </tr>
+                    <tr>
+                        <th>Subject:</th>
+                        <td id="modal-subject"></td>
+                    </tr>
+                    <tr>
+                        <th>Date:</th>
+                        <td id="modal-date"></td>
+                    </tr>
+                    <tr>
+                        <th>Message:</th>
+                        <td id="modal-message"></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
 
     <div class="container">
         <div class="welcome-card">
@@ -546,7 +647,7 @@
         <!-- Products Tab Content -->
         <div class="tab-content" id="products-tab" style="display: none;">
             <div class="products-table-container">
-                <h3 class="mb-4">Top Products</h3>
+                <h3 class="mb-4">Product Management</h3>
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <div class="card shadow mb-4">
@@ -568,22 +669,6 @@
                                             <div class="card-body text-center">
                                                 <h6 class="card-title">Total Inventory</h6>
                                                 <p class="card-text h4"><%= productStats.total_inventory || 0 %> units</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <div class="card bg-light">
-                                            <div class="card-body text-center">
-                                                <h6 class="card-title">Categories</h6>
-                                                <p class="card-text h4"><%= productStats.categories || 0 %></p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <div class="card bg-light">
-                                            <div class="card-body text-center">
-                                                <h6 class="card-title">Avg. Price</h6>
-                                                <p class="card-text h4">₹<%= Number(productStats.avg_price || 0).toFixed(2) %></p>
                                             </div>
                                         </div>
                                     </div>
@@ -636,7 +721,7 @@
         <!-- Users Tab Content -->
         <div class="tab-content" id="users-tab" style="display: none;">
             <div class="products-table-container">
-                <h3 class="mb-4">User Statistics</h3>
+                <h3 class="mb-4">User Management</h3>
                 <div class="row mb-4">
                     <div class="col-md-4">
                         <div class="card bg-primary text-white mb-4">
@@ -741,13 +826,17 @@
         const cancelDelete = document.getElementById('cancelDelete');
         const confirmDelete = document.getElementById('confirmDelete');
         const productToDelete = document.getElementById('product-to-delete');
+        const messagesContainer = document.getElementById('messagesContainer');
+        const messageDetailsModal = document.getElementById('messageDetailsModal');
+        const closeMessagesBtn = document.querySelector('.close-messages');
+        const closeModalBtn = document.querySelector('.close-modal');
         let isMessagesVisible = false;
         let selectedProductId = null;
         let selectedUserId = null;
         let deleteType = null; // 'product' or 'user'
 
-        // Get messages data from the data attribute instead of embedding EJS in JavaScript
-        const messagesData = JSON.parse(document.getElementById('messages-data').getAttribute('data-messages'));
+        // Get messages data from the data attribute
+        const contactMessages = JSON.parse('<%- JSON.stringify(contactMessages || []) %>');
 
         // Tab switching
         document.querySelectorAll('.admin-tab').forEach(tab => {
@@ -771,23 +860,26 @@
         // Toggle messages container
         notificationBtn.addEventListener('click', () => {
             isMessagesVisible = !isMessagesVisible;
-            document.querySelectorAll('.messages-container').forEach(container => {
-                container.classList.toggle('show', isMessagesVisible);
-            });
+            messagesContainer.classList.toggle('show', isMessagesVisible);
             
             // Rotate bell icon when messages are visible
             notificationBtn.querySelector('i').style.transform = isMessagesVisible ? 'rotate(15deg)' : 'rotate(0)';
         });
 
+        // Close messages container
+        closeMessagesBtn.addEventListener('click', () => {
+            isMessagesVisible = false;
+            messagesContainer.classList.remove('show');
+            notificationBtn.querySelector('i').style.transform = 'rotate(0)';
+        });
+
         // Close messages when clicking outside
         document.addEventListener('click', (event) => {
             if (isMessagesVisible && 
-                !document.querySelectorAll('.messages-container').some(container => container.contains(event.target)) && 
+                !messagesContainer.contains(event.target) && 
                 !notificationBtn.contains(event.target)) {
                 isMessagesVisible = false;
-                document.querySelectorAll('.messages-container').forEach(container => {
-                    container.classList.remove('show');
-                });
+                messagesContainer.classList.remove('show');
                 notificationBtn.querySelector('i').style.transform = 'rotate(0)';
             }
         });
@@ -797,7 +889,7 @@
             item.addEventListener('click', () => {
                 const messageId = item.getAttribute('data-message-id');
                 if (messageId) {
-                    const message = messagesData.find(m => m.id == messageId);
+                    const message = contactMessages.find(m => m.id == messageId);
                     if (message) {
                         // Populate modal with message data
                         document.getElementById('modal-sender').textContent = message.name;
@@ -814,7 +906,7 @@
         });
 
         // Close modal when clicking close button
-        closeModal.addEventListener('click', () => {
+        closeModalBtn.addEventListener('click', () => {
             messageDetailsModal.classList.remove('show');
         });
 

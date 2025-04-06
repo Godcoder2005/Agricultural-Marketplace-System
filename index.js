@@ -427,6 +427,13 @@ app.get('/admin/dashboard', isAdmin, async (req, res) => {
             ORDER BY quantity_sold DESC
             LIMIT 5`
         );
+
+        // Fetch contact messages
+        const [contactMessages] = await connection.promise().query(
+            `SELECT * FROM contact_messages ORDER BY created_at DESC`
+        );
+        
+        console.log('Contact Messages:', contactMessages); // Debug log
         
         res.render('admin-dashboard', {
             orderStats: orderStats[0],
@@ -435,7 +442,8 @@ app.get('/admin/dashboard', isAdmin, async (req, res) => {
             recentOrders,
             popularProducts,
             isAdmin: true,
-            messages: req.flash()
+            messages: req.flash(),
+            contactMessages
         });
     } catch (error) {
         console.error('Error loading admin dashboard:', error);
@@ -447,7 +455,8 @@ app.get('/admin/dashboard', isAdmin, async (req, res) => {
             recentOrders: [],
             popularProducts: [],
             isAdmin: true,
-            messages: req.flash()
+            messages: req.flash(),
+            contactMessages: []
         });
     }
 });
@@ -477,13 +486,10 @@ app.delete('/admin/delete-product/:id', isAdmin, async (req, res) => {
 app.delete('/admin/delete-user/:id', isAdmin, async (req, res) => {
     try {
         const userId = req.params.id;
-
+        
+        // Check if user is an admin
         const user = await User.findByPk(userId);
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-
-        if (user.role === 'admin') {
+        if (user && user.role === 'admin') {
             return res.status(403).json({ error: 'Admin users cannot be deleted' });
         }
 
@@ -1247,6 +1253,48 @@ app.get('/order-tracking/:orderId', isAuthenticated, async (req, res) => {
         console.error('Error fetching order tracking history:', error);
         req.flash('error', 'Error loading tracking history');
         res.redirect('/orders');
+    }
+});
+
+// Admin routes for managing products
+app.get('/admin/products', isAdmin, async (req, res) => {
+    try {
+        const products = await Product.findAll({
+            include: [{
+                model: User,
+                attributes: ['name', 'email']
+            }],
+            order: [['createdAt', 'DESC']]
+        });
+
+        res.render('admin-products', {
+            products,
+            isAdmin: true,
+            messages: req.flash()
+        });
+    } catch (error) {
+        console.error('Error fetching products:', error);
+        req.flash('error', 'Error loading products');
+        res.redirect('/admin/dashboard');
+    }
+});
+
+// Admin routes for managing users
+app.get('/admin/users', isAdmin, async (req, res) => {
+    try {
+        const users = await User.findAll({
+            order: [['createdAt', 'DESC']]
+        });
+
+        res.render('admin-users', {
+            users,
+            isAdmin: true,
+            messages: req.flash()
+        });
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        req.flash('error', 'Error loading users');
+        res.redirect('/admin/dashboard');
     }
 });
 

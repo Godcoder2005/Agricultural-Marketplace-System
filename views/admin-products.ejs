@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Manage Products</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #199733;
+            --text-light: #ffffff;
+            --bg-dark: #170f29;
+        }
+
+        body {
+            background: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+        }
+
+        .admin-sidebar {
+            background: rgba(23, 15, 41, 0.7);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+
+        .nav-link {
+            color: var(--text-light);
+            padding: 0.8rem 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(25, 151, 51, 0.3);
+            color: var(--text-light);
+        }
+
+        .nav-link i {
+            margin-right: 0.5rem;
+        }
+
+        .products-table-container {
+            background: rgba(23, 15, 41, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .table {
+            color: var(--text-light);
+        }
+
+        .table th {
+            background: rgba(25, 151, 51, 0.2);
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .table td {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 0.25rem 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        .confirmation-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .confirmation-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--bg-dark);
+            padding: 2rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            min-width: 300px;
+        }
+
+        .confirmation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .confirmation-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn-cancel {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-confirm {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-2 admin-sidebar">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/dashboard">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/orders">
+                            <i class="fas fa-shopping-cart"></i> Orders
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/admin/products">
+                            <i class="fas fa-box"></i> Products
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/users">
+                            <i class="fas fa-users"></i> Users
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="col-md-10 p-4">
+                <h2 class="mb-4">Manage Products</h2>
+
+                <% if (messages.error) { %>
+                    <div class="alert alert-danger"><%= messages.error %></div>
+                <% } %>
+                <% if (messages.success) { %>
+                    <div class="alert alert-success"><%= messages.success %></div>
+                <% } %>
+
+                <div class="products-table-container">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Category</th>
+                                    <th>Price</th>
+                                    <th>Quantity</th>
+                                    <th>Seller</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (products && products.length > 0) { %>
+                                    <% products.forEach(product => { %>
+                                        <tr data-product-id="<%= product.product_id %>">
+                                            <td>#<%= product.product_id %></td>
+                                            <td><%= product.name %></td>
+                                            <td><%= product.category %></td>
+                                            <td>₹<%= Number(product.price).toFixed(2) %></td>
+                                            <td><%= product.quantity %></td>
+                                            <td><%= product.User.name %></td>
+                                            <td>
+                                                <button class="delete-btn" data-product-id="<%= product.product_id %>">
+                                                    <i class="fas fa-trash"></i> Delete
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    <% }); %>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="7" class="text-center">No products found</td>
+                                    </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="confirmation-modal" id="confirmationModal">
+        <div class="confirmation-content">
+            <div class="confirmation-header">
+                <h5 class="confirmation-title">Confirm Deletion</h5>
+                <button class="close-modal" id="closeConfirmationModal">&times;</button>
+            </div>
+            <div class="confirmation-body">
+                <p>Are you sure you want to delete this product?</p>
+                <p id="product-to-delete"></p>
+                <div class="confirmation-actions">
+                    <button class="btn-cancel" id="cancelDelete">Cancel</button>
+                    <button class="btn-confirm" id="confirmDelete">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const confirmationModal = document.getElementById('confirmationModal');
+        const closeConfirmationModal = document.getElementById('closeConfirmationModal');
+        const cancelDelete = document.getElementById('cancelDelete');
+        const confirmDelete = document.getElementById('confirmDelete');
+        const productToDelete = document.getElementById('product-to-delete');
+        let selectedProductId = null;
+
+        // Product deletion
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', (event) => {
+                event.stopPropagation();
+                const productId = btn.getAttribute('data-product-id');
+                const productRow = document.querySelector(`tr[data-product-id="${productId}"]`);
+                const productName = productRow.querySelector('td:nth-child(2)').textContent;
+                
+                selectedProductId = productId;
+                productToDelete.textContent = `Product: ${productName} (ID: ${productId})`;
+                confirmationModal.style.display = 'block';
+            });
+        });
+
+        // Close confirmation modal
+        closeConfirmationModal.addEventListener('click', () => {
+            confirmationModal.style.display = 'none';
+        });
+
+        cancelDelete.addEventListener('click', () => {
+            confirmationModal.style.display = 'none';
+        });
+
+        // Confirm delete
+        confirmDelete.addEventListener('click', () => {
+            if (selectedProductId) {
+                fetch(`/admin/delete-product/${selectedProductId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Remove the product row from the table
+                        const productRow = document.querySelector(`tr[data-product-id="${selectedProductId}"]`);
+                        if (productRow) {
+                            productRow.remove();
+                        }
+                        
+                        // Show success message
+                        alert('Product deleted successfully!');
+                    } else {
+                        alert('Failed to delete product. Please try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while deleting the product.');
+                })
+                .finally(() => {
+                    confirmationModal.style.display = 'none';
+                });
+            }
+        });
+    </script>
+</body>
+</html> 
