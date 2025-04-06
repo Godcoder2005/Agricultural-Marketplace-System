@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Orders - Farmix</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            background-color: #2c3e50;
+        }
+        
+        .navbar-brand {
+            font-weight: 600;
+            color: #2ecc71 !important;
+        }
+        
+        .admin-sidebar {
+            background-color: #2c3e50;
+            color: #fff;
+            min-height: calc(100vh - 56px);
+            padding-top: 20px;
+        }
+        
+        .admin-sidebar .nav-link {
+            color: #ecf0f1;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            padding: 10px 15px;
+            transition: all 0.3s;
+        }
+        
+        .admin-sidebar .nav-link:hover, 
+        .admin-sidebar .nav-link.active {
+            background-color: #2ecc71;
+            color: #fff;
+        }
+        
+        .admin-sidebar .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .admin-content {
+            padding: 20px;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .card-header {
+            background-color: #fff;
+            border-bottom: 1px solid #e0e0e0;
+            font-weight: 600;
+            padding: 15px 20px;
+        }
+        
+        .table th {
+            font-weight: 600;
+            background-color: #f8f9fa;
+        }
+        
+        .table td, .table th {
+            vertical-align: middle;
+        }
+        
+        .badge {
+            padding: 7px 12px;
+            font-size: 12px;
+            font-weight: 500;
+            border-radius: 30px;
+        }
+        
+        .badge-pending {
+            background-color: #ffeaa7;
+            color: #d35400;
+        }
+        
+        .badge-processing {
+            background-color: #81ecec;
+            color: #00cec9;
+        }
+        
+        .badge-shipped {
+            background-color: #74b9ff;
+            color: #0984e3;
+        }
+        
+        .badge-delivered {
+            background-color: #55efc4;
+            color: #00b894;
+        }
+        
+        .badge-cancelled {
+            background-color: #fab1a0;
+            color: #d63031;
+        }
+        
+        .btn-status {
+            padding: 5px 10px;
+            font-size: 12px;
+            border-radius: 4px;
+            margin-right: 5px;
+        }
+        
+        .status-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        
+        .status-actions .btn {
+            margin-bottom: 5px;
+        }
+        
+        .order-details-btn {
+            color: #3498db;
+            cursor: pointer;
+        }
+        
+        .order-details-section {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .table-responsive {
+            overflow-x: auto;
+        }
+        
+        .multi-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .item-name {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 180px;
+            margin-bottom: 2px;
+        }
+        
+        .order-items-list {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .order-item-detail {
+            padding: 5px;
+            border-bottom: 1px dashed #dee2e6;
+        }
+        
+        .order-item-detail:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/admin/dashboard">Farmix Admin</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/" target="_blank">
+                            <i class="fas fa-external-link-alt"></i> View Site
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/logout">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-2 admin-sidebar">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/dashboard">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/admin/orders">
+                            <i class="fas fa-shopping-cart"></i> Orders
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/dashboard">
+                            <i class="fas fa-box"></i> Products
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/dashboard">
+                            <i class="fas fa-users"></i> Users
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/dashboard">
+                            <i class="fas fa-envelope"></i> Messages
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="col-md-10 admin-content">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Manage Orders</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Display flash messages -->
+                        <% if (messages && messages.success) { %>
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <%= messages.success %>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        <% } %>
+                        <% if (messages && messages.error) { %>
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <%= messages.error %>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        <% } %>
+                        
+                        <div class="table-responsive">
+                            <table id="ordersTable" class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Product</th>
+                                        <th>Buyer</th>
+                                        <th>Date</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (orders && orders.length > 0) { %>
+                                        <% orders.forEach(order => { %>
+                                            <tr id="order-row-<%= order.order_id %>">
+                                                <td>#<%= order.order_id %></td>
+                                                <td>
+                                                    <% if (order.is_multi_item && order.items && order.items.length > 0) { %>
+                                                        <div class="multi-item">
+                                                            <span class="badge bg-info text-dark mb-1"><%= order.items.length %> items</span>
+                                                            <% let firstItems = order.items.slice(0, 2); %>
+                                                            <% firstItems.forEach(item => { %>
+                                                                <div class="item-name"><%= item.product_name %></div>
+                                                            <% }); %>
+                                                            <% if (order.items.length > 2) { %>
+                                                                <small class="text-muted">+ <%= order.items.length - 2 %> more</small>
+                                                            <% } %>
+                                                        </div>
+                                                    <% } else { %>
+                                                        <%= order.product_name %>
+                                                    <% } %>
+                                                </td>
+                                                <td><%= order.buyer_name %></td>
+                                                <td><%= new Date(order.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %></td>
+                                                <td>₹<%= Number(order.total_price).toFixed(2) %></td>
+                                                <td>
+                                                    <span class="badge badge-<%= order.order_status %>" id="status-badge-<%= order.order_id %>">
+                                                        <%= order.order_status.charAt(0).toUpperCase() + order.order_status.slice(1) %>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div class="status-actions" data-order-id="<%= order.order_id %>">
+                                                        <form action="/admin/orders/<%= order.order_id %>/update-status" method="POST" class="d-inline">
+                                                            <input type="hidden" name="order_status" value="processing">
+                                                            <button type="submit" class="btn btn-sm btn-outline-primary">
+                                                                Process
+                                                            </button>
+                                                        </form>
+                                                        <form action="/admin/orders/<%= order.order_id %>/update-status" method="POST" class="d-inline">
+                                                            <input type="hidden" name="order_status" value="shipped">
+                                                            <button type="submit" class="btn btn-sm btn-outline-info">
+                                                                Ship
+                                                            </button>
+                                                        </form>
+                                                        <form action="/admin/orders/<%= order.order_id %>/update-status" method="POST" class="d-inline">
+                                                            <input type="hidden" name="order_status" value="delivered">
+                                                            <button type="submit" class="btn btn-sm btn-outline-success">
+                                                                Deliver
+                                                            </button>
+                                                        </form>
+                                                        <form action="/admin/orders/<%= order.order_id %>/update-status" method="POST" class="d-inline">
+                                                            <input type="hidden" name="order_status" value="cancelled">
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                                Cancel
+                                                            </button>
+                                                        </form>
+                                                        <a href="/admin/order-tracking/<%= order.order_id %>" class="btn btn-sm btn-outline-secondary">
+                                                            <i class="fas fa-truck-loading"></i> Tracking
+                                                        </a>
+                                                        <a href="#" class="btn btn-sm btn-outline-secondary order-details-btn" 
+                                                           data-bs-toggle="collapse" 
+                                                           data-bs-target="#orderDetails<%= order.order_id %>">
+                                                            Details
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr class="collapse" id="orderDetails<%= order.order_id %>">
+                                                <td colspan="7">
+                                                    <div class="order-details-section">
+                                                        <div class="row">
+                                                            <div class="col-md-6">
+                                                                <h6 class="mb-3">Order Information</h6>
+                                                                <p><span class="info-label">Order ID:</span> #<%= order.order_id %></p>
+                                                                <p><span class="info-label">Order Date:</span> <%= new Date(order.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
+                                                                <% if (order.is_multi_item && order.items && order.items.length > 0) { %>
+                                                                    <p><span class="info-label">Items:</span> <%= order.items.length %> products</p>
+                                                                    <div class="order-items-list mt-2">
+                                                                        <% order.items.forEach(item => { %>
+                                                                            <div class="order-item-detail mb-2">
+                                                                                <div><%= item.product_name %> (₹<%= Number(item.price).toFixed(2) %> x <%= item.quantity %>)</div>
+                                                                                <div class="text-muted small">Seller: <%= item.seller_name %></div>
+                                                                            </div>
+                                                                        <% }); %>
+                                                                    </div>
+                                                                <% } else { %>
+                                                                    <p><span class="info-label">Product:</span> <%= order.product_name %></p>
+                                                                    <p><span class="info-label">Quantity:</span> <%= order.quantity %></p>
+                                                                <% } %>
+                                                                <p><span class="info-label">Total Price:</span> ₹<%= Number(order.total_price).toFixed(2) %></p>
+                                                                <p><span class="info-label">Payment Status:</span> <%= order.payment_status.charAt(0).toUpperCase() + order.payment_status.slice(1) %></p>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <h6 class="mb-3">Customer Information</h6>
+                                                                <p><span class="info-label">Name:</span> <%= order.first_name %> <%= order.last_name %></p>
+                                                                <p><span class="info-label">Email:</span> <%= order.email %></p>
+                                                                <p><span class="info-label">Phone:</span> <%= order.phone %></p>
+                                                                <p><span class="info-label">Address:</span> <%= order.address %>, <%= order.city %>, <%= order.pincode %></p>
+                                                                <p><span class="info-label">Seller:</span> <%= order.seller_name %> (<%= order.seller_email %>)</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <% }); %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="7" class="text-center">No orders found</td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTable
+            $('#ordersTable').DataTable({
+                order: [[0, 'desc']], // Sort by order ID descending
+                pageLength: 10,
+                lengthMenu: [10, 25, 50, 100],
+                language: {
+                    search: "_INPUT_",
+                    searchPlaceholder: "Search orders..."
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

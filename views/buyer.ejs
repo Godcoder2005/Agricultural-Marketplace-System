@@ -4,205 +4,495 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buy Products - Agriculture Marketplace</title>
+    <title>Shop - Farmix</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --primary-color: #2ecc71;
+            --secondary-color: #f1c40f;
+            --dark-color: #2c3e50;
+            --light-color: #ecf0f1;
+            --accent-color: #e74c3c;
+            --border-radius: 10px;
         }
-
+        
         body {
-            font-family: 'Roboto', Arial, sans-serif;
-            background-color: #f4f7fa;
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
             color: #333;
-            padding: 50px 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
         }
 
-        .container {
-            width: 100%;
-            max-width: 1200px;
-            background-color: #fff;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            border: 1px solid #e0e0e0;
+        .navbar {
+            padding: 15px 0;
+            background: white;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
         }
 
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
+        .navbar-brand {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary-color) !important;
         }
 
-        header h1 {
-            font-size: 2.4rem;
-            color: #4CAF50;
+        .nav-link {
+            color: var(--dark-color) !important;
+            font-weight: 500;
+            margin: 0 12px;
+            position: relative;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color) !important;
+        }
+
+        .nav-link.active {
+            color: var(--primary-color) !important;
             font-weight: 600;
         }
 
-        nav a {
-            text-decoration: none;
-            color: #4CAF50;
-            font-weight: bold;
-            font-size: 1.1rem;
-            padding: 10px 20px;
-            border-radius: 25px;
-            transition: background-color 0.3s ease, color 0.3s ease;
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--primary-color);
+            border-radius: 3px;
         }
 
-        nav a:hover {
-            background-color: #4CAF50;
+        /* Shop Header */
+        .shop-header {
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
+                        url('https://images.unsplash.com/photo-1523741543316-beb7fc7023d8?ixlib=rb-1.2.1&auto=format&fit=crop&w=1489&q=80');
+            background-size: cover;
+            background-position: center;
+            padding: 80px 0;
             color: white;
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
         }
 
-        .product-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 30px;
-            margin-top: 20px;
+        .shop-header::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 80px;
+            background: linear-gradient(to top, #f8f9fa, transparent);
         }
 
+        .shop-header h1 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .shop-header p {
+            font-size: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+        }
+
+        /* Product Cards */
         .product-card {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
+            background: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.07);
+            transition: all 0.3s;
+            height: 100%;
+            position: relative;
+            border: 1px solid rgba(0,0,0,0.05);
         }
 
         .product-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
         }
 
-        .product-card img {
-            width: 100%;
+        .product-image {
             height: 200px;
+            background-color: #f8f9fa;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
             object-fit: cover;
-            border-radius: 8px;
-            margin-bottom: 15px;
+            transition: transform 0.5s;
         }
 
-        .product-card h3 {
-            font-size: 1.6rem;
-            color: #333;
-            font-weight: 500;
-            margin-bottom: 15px;
+        .product-card:hover .product-image img {
+            transform: scale(1.05);
         }
 
-        .product-card p {
-            font-size: 1.1rem;
-            color: #777;
-            margin-bottom: 10px;
-        }
-
-        .product-card .price {
-            font-size: 1.4rem;
-            color: #4CAF50;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        .product-card .quantity {
-            font-size: 1.1rem;
-            color: #555;
-        }
-
-        .buy-btn {
-            background-color: #4CAF50;
+        .product-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--primary-color);
             color: white;
-            padding: 12px 20px;
-            font-size: 1.1rem;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            border-radius: 8px;
-            transition: background-color 0.3s ease;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 5px 10px;
+            border-radius: 50px;
+            z-index: 2;
         }
 
-        .buy-btn:hover {
-            background-color: #45a049;
+        .product-info {
+            padding: 20px;
         }
 
-        footer {
-            text-align: center;
-            margin-top: 50px;
-            font-size: 0.9rem;
-            color: #777;
-        }
-
-        footer a {
-            color: #4CAF50;
-            text-decoration: none;
-        }
-
-        footer a:hover {
-            text-decoration: underline;
-        }
-
-        .seller-email {
+        .product-category {
+            color: var(--primary-color);
             font-size: 14px;
-            /* Adjust font size */
-            color: #2c3e50;
-            /* Darker text color */
-            font-style: italic;
-            /* Italicize for emphasis */
-            margin-top: 10px;
-            /* Add spacing from the previous element */
-            text-decoration: underline;
-            /* Underline for visual interest */
+            font-weight: 500;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
         }
 
-        .seller-email:hover {
-            color: #3498db;
-            /* Change color on hover */
+        .product-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 10px;
+            line-height: 1.4;
+            min-height: 50px;
+        }
+
+        .product-price {
+            font-size: 20px;
+            color: var(--primary-color);
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .product-price .currency {
+            font-size: 14px;
+            margin-right: 2px;
+        }
+
+        .product-quantity {
+            font-size: 14px;
+            color: #666;
+            background-color: rgba(46, 204, 113, 0.1);
+            padding: 5px 10px;
+            border-radius: 50px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        .product-seller {
+            font-size: 14px;
+            color: #666;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            display: flex;
+            align-items: center;
+        }
+
+        .product-seller i {
+            color: var(--primary-color);
+            margin-right: 6px;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-view-product, .btn-add-cart, .btn-buy-now {
+            padding: 8px 15px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 500;
+            flex: 1;
+            text-align: center;
+            transition: all 0.3s;
             text-decoration: none;
-            /* Remove underline on hover */
+        }
+
+        .btn-view-product {
+            background-color: var(--light-color);
+            color: var(--dark-color);
+        }
+
+        .btn-add-cart {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-buy-now {
+            background-color: var(--secondary-color);
+            color: var(--dark-color);
+        }
+
+        .btn-view-product:hover {
+            background-color: #dfe6e9;
+            color: var(--dark-color);
+        }
+
+        .btn-add-cart:hover {
+            background-color: #27ae60;
+            color: white;
+        }
+
+        .btn-buy-now:hover {
+            background-color: #f39c12;
+            color: var(--dark-color);
+        }
+
+        /* Alert Messages */
+        .alert {
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 767px) {
+            .shop-header h1 {
+                font-size: 32px;
+            }
+            
+            .shop-header p {
+                font-size: 16px;
+            }
+            
+            .product-card {
+                margin-bottom: 20px;
+            }
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <header>
-            <h1>Available Products</h1>
-            <nav>
-                <a href="/shop">Home</a>
-                <a href="/logout">Logout</a>
-            </nav>
-        </header>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/">Farmix</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/shop">Shop</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/products">Products</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/orders">My Orders</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/services">Services</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/about">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/contact">Contact</a>
+                    </li>
+                    <% if (isLoggedIn) { %>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/cart">
+                                <i class="fas fa-shopping-cart"></i>
+                                <span id="cartCount" class="badge bg-danger rounded-pill">0</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-login" href="/logout">Logout</a>
+                        </li>
+                    <% } %>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
-        <section class="product-container">
-            <% products.forEach(product=> { %>
-                <div class="product-card">
-                    <img src="<%= product.image_url || 'default-product-image.jpg' %>" alt="<%= product.name %>">
-                    <h3>
-                        <%= product.name %>
-                    </h3>
-                    <p><strong>Category:</strong>
-                        <%= product.category %>
-                    </p>
-                    <p class="price">Price: ₹<%= product.price %> per unit</p>
-                    <p class="quantity"><strong>Available Quantity:</strong>
-                        <%= product.quantity %>
-                    </p>
-                    <p class="seller-email">Seller Mail: <%= product.User.email %></p>
-                    </p>
-                    <a href="/checkout/<%= product.product_id %>" class="buy-btn">Buy Now</a>
+    <!-- Shop Header -->
+    <section class="shop-header">
+        <div class="container">
+            <h1>Marketplace</h1>
+            <p>Fresh products directly from local farmers</p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="container mb-5">
+        <div class="row">
+            <!-- Products Grid -->
+            <div class="col-12">
+                <div class="row products-grid">
+                    <% products.forEach(function(product) { %>
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="product-card">
+                                <div class="product-image">
+                                    <% if (product.imageUrl) { %>
+                                        <img src="<%= product.imageUrl %>" alt="<%= product.name %>">
+                                    <% } else { %>
+                                        <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60" alt="<%= product.name %>">
+                                    <% } %>
+                                </div>
+                                <div class="product-info">
+                                    <div class="product-category"><%= product.category %></div>
+                                    <h3 class="product-name"><%= product.name %></h3>
+                                    <div class="product-price">
+                                        <span class="currency">₹</span><%= product.price %>
+                                    </div>
+                                    <div class="product-quantity">
+                                        <i class="fas fa-box me-1"></i>
+                                        <%= product.quantity %> units available
+                                    </div>
+                                    <div class="product-seller">
+                                        <i class="fas fa-user"></i>
+                                        <%= product.User.name || 'Unknown Seller' %>
+                                    </div>
+                                    <div class="product-actions" data-product-id="<%= product.product_id %>">
+                                        <a href="/products/<%= product.product_id %>" class="btn-view-product">Details</a>
+                                        <button class="btn-add-cart">Add to Cart</button>
+                                        <a href="/checkout/<%= product.product_id %>" class="btn-buy-now">Buy Now</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
                 </div>
-                <% }) %>
-        </section>
-
-        <footer>
-            <p>&copy; 2025 Farm Shop. All rights reserved.</p>
-            <a href="/terms">Terms & Conditions</a>
-        </footer>
+            </div>
+        </div>
     </div>
+
+    <!-- Add this after the products section -->
+    <div class="container my-4">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card shadow-sm">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0">Your Orders</h5>
+                            <p class="text-muted mb-0">You have <%= orderCount || 0 %> order(s)</p>
+                        </div>
+                        <a href="/orders" class="btn btn-success">View My Orders</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-5 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>About Farmix</h5>
+                    <p>Your trusted agricultural marketplace connecting farmers and buyers.</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="/" class="text-light">Home</a></li>
+                        <li><a href="/shop" class="text-light">Shop</a></li>
+                        <li><a href="/products" class="text-light">Products</a></li>
+                        <li><a href="/services" class="text-light">Services</a></li>
+                        <li><a href="/about" class="text-light">About</a></li>
+                        <li><a href="/contact" class="text-light">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Contact Us</h5>
+                    <p>Email: info@farmix.com<br>
+                    Phone: +1 234 567 890</p>
+                </div>
+            </div>
+            <div class="text-center mt-4">
+                <p>&copy; 2024 Farmix. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize cart from localStorage
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            updateCartCount();
+
+            // Add to cart button click handlers
+            const addToCartButtons = document.querySelectorAll('.btn-add-cart');
+            addToCartButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    const productCard = e.target.closest('.product-card');
+                    const productActionsDiv = e.target.closest('.product-actions');
+                    const productId = productActionsDiv.dataset.productId;
+                    
+                    // Get product details
+                    const name = productCard.querySelector('.product-name').textContent;
+                    const price = parseFloat(productCard.querySelector('.product-price').textContent.replace('₹', ''));
+                    const category = productCard.querySelector('.product-category').textContent;
+                    let imageUrl = '';
+                    
+                    // Try to get the image if it exists
+                    const imageElement = productCard.querySelector('.product-image img');
+                    if (imageElement) {
+                        imageUrl = imageElement.src;
+                    }
+                    
+                    // Check if product is already in cart
+                    const existingProduct = cart.find(item => item.id === productId);
+                    
+                    if (existingProduct) {
+                        existingProduct.quantity += 1;
+                    } else {
+                        // Add new product to cart
+                        cart.push({
+                            id: productId,
+                            name: name,
+                            price: price,
+                            category: category,
+                            quantity: 1,
+                            imageUrl: imageUrl
+                        });
+                    }
+                    
+                    // Save updated cart to localStorage
+                    localStorage.setItem('cart', JSON.stringify(cart));
+                    
+                    // Show notification
+                    alert('Product added to cart successfully!');
+                    
+                    // Update cart count
+                    updateCartCount();
+                });
+            });
+            
+            // Function to update cart count
+            function updateCartCount() {
+                const cartCountElement = document.getElementById('cartCount');
+                if (cartCountElement) {
+                    // Calculate total quantity of items in cart
+                    const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
+                    cartCountElement.textContent = totalItems;
+                }
+            }
+        });
+    </script>
 </body>
 
 </html>
